@@ -800,8 +800,9 @@ BubblesFSM.prototype = {
   },
 
   onzoomout: function( event, from, to ) {
-    this.resetCircleDesign();
+    this.zoomOut();
     papers.zoomout();
+    this.resetCircleDesign();
     popup.initClickListenersForNav();
   },
 

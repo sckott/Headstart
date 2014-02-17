@@ -233,7 +233,7 @@ HeadstartFSM.prototype = {
     });
 
     $("#chart").on("click", function() {
-      headstart.bubbles["1"].zoomOut();
+      headstart.bubbles["1"].zoomout();
     });
   },
 
