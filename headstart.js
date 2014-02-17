@@ -229,11 +229,19 @@ HeadstartFSM.prototype = {
 
   initMouseClickListeners: function() {
     $("rect").on( "click", function() {
-      headstart.bubbles["1"].zoomout();
+      if (!headstart.bubbles[1].is("hoversmall")) {
+        if (!headstart.bubbles[1].is("zoomedin")) {
+          headstart.bubbles["1"].zoomout();
+        }
+      }
     });
 
     $("#chart").on("click", function() {
-      headstart.bubbles["1"].zoomout();
+      if (!headstart.bubbles[1].is("hoversmall")) {
+        if (!headstart.bubbles[1].is("zoomedin")) {
+          headstart.bubbles["1"].zoomout();
+        }
+      }
     });
   },
 
