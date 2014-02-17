@@ -148,7 +148,11 @@ BubblesFSM.prototype = {
   initCircleClickListener: function() {
     var b = this;
     d3.selectAll( "circle" ).on("click", function(d) {
-      b.zoomin(d);
+      if (b.is("hoverbig")){
+        b.zoomout();
+      } else {
+        b.zoomin(d);
+      }
     });
   },
 
@@ -450,6 +454,7 @@ BubblesFSM.prototype = {
 
     d3.selectAll("circle")
       .on("click", function(d) {
+        console.log("asdf");
         return bubbles.zoom(d);
       })
     .style("display", "block");
@@ -842,7 +847,7 @@ StateMachine.create({
     { name: "zoomout",   from: "hoverbig",   to: "zoomedout" },
 
     // is ignored
-    //{ name: "zoomout", from: "zoomedout",    to: "zoomedout" },
+    { name: "zoomout", from: "zoomedout",    to: "zoomedout" },
     // for the mouseout hack
     { name: "mouseout", from: "zoomedout",   to: "zoomedout" }
   ]

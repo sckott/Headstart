@@ -477,18 +477,16 @@ papers.enlargePaper = function(d,i) {
 
             list.reset();
 
-            headstart.papers_list.selectAll("#list_holder")
+            list.papers_list.selectAll("#list_holder")
             .filter(function (x, i) {
                 return (x.area == d.title)
-            })
-            .style("display", "inline");
+            }).style("display", "inline");
 
             if(headstart.current_enlarged_paper != null)
                 headstart.current_enlarged_paper.paper_selected = false;
 
             headstart.current_enlarged_paper = null;
 
-            d3.event.stopPropagation();
         });
 
     d.resized = true;
