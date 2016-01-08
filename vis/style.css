@@ -1,9 +1,8 @@
 /* ################ Chart ############### */
 
 .headstart div#headstart-chart {
-  position: absolute;
   font-family: Helvetica;
-  margin-top: 10px;
+  /*margin-top: 10px;*/
 }
 
 .headstart #chart-svg {
@@ -281,9 +280,9 @@
 /* ################ Papers list ############### */
 
 .headstart div#papers_list_container {
-    margin-top: -23px;
+    /*margin-top: -23px;
     margin-bottom: -23px;
-    position: relative;
+    position: relative;*/
 }
 
 .headstart div#input_container {
@@ -301,8 +300,8 @@
 
 
 .headstart div#show_hide_container {
-  position: relative;
-  top: 0px;
+  /*position: relative;
+  top: 0px;*/
   cursor: pointer;
   background-color: #EEE;
 }

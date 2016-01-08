@@ -14,8 +14,9 @@ HeadstartFSM = function(host, path, tag, files, options) {
   this.path = path;
   this.tag = tag;
 
-  this.min_height = 650;
-  this.min_width  = 650;
+  this.min_height = 500;
+  this.min_width  = 500;
+  this.max_height = 750;
 
   this.dogear_width  = 0.1;
   this.dogear_height = 0.1;
@@ -231,11 +232,26 @@ HeadstartFSM.prototype = {
   // the rest of headstarts variables, which are initalized by some
   // sort of calculation
   initDynamicVariables: function() {
+    var self = this
     // initialize a bunch of variables.
        
     //TODO: Change this to the height of the parent element   
-    this.available_width  = this.vis_width; //$("#" + this.tag).width();  
-    this.available_height = this.vis_height; //$("#" + this.tag).height();
+    // this.available_width  = this.vis_width; //$("#" + this.tag).width();  
+    // this.available_height = this.vis_height; //$("#" + this.tag).height();
+    this.available_width  = $("#headstart-chart").width();  
+    this.available_height = this.max_height;
+
+    d3.select(window)
+      .on("resize", function() {
+        self.available_width  = $("#headstart-chart").width();  
+        self.available_height = $(window).height();
+        self.calculateMaxChartSize()
+        if (self.max_chart_size > self.max_height) {
+          self.max_chart_size = self.max_height;
+        }
+        d3.select("#chart-svg").attr("width", self.max_chart_size);
+        d3.select("#chart-svg").attr("height", self.max_chart_size);
+      });
 
     this.x = d3.scale.linear().range([0, this.circle_zoom_factor]);
     this.y = d3.scale.linear().range([0, this.circle_zoom_factor]);
@@ -285,7 +301,7 @@ HeadstartFSM.prototype = {
         var corrected_height = this.available_height - this.top_correction - this.bottom_correction;
         this.max_chart_size = corrected_height;
       } else {
-          this.max_chart_size = getMinSize();
+          this.max_chart_size = this.available_width;
       }
     } else {
        this.max_chart_size = getMinSize();
@@ -354,7 +370,9 @@ HeadstartFSM.prototype = {
     var svg = this.chart_id.append( "svg" )
             .attr("id", "chart-svg")
             .attr( "height", this.max_chart_size + "px" )
-            .attr( "width",  this.max_chart_size + "px" );
+            .attr( "width",  this.max_chart_size + "px" )
+            .attr( "viewBox",  "0 0 " + this.max_chart_size +" "+  this.max_chart_size)
+            .attr("preserveAspectRatio", "xMidYMid meet");
 
     this.svg = svg;
   },

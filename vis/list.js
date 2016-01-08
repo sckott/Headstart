@@ -55,7 +55,7 @@ var list = StateMachine.create({
 list.drawShowHideContainer = function() { 
     var list_show_hide_container =
         d3.select ( "#papers_list_container" )
-            .style ( "left",  headstart.max_chart_size+10 + "px" )
+            //.style ( "left",  headstart.max_chart_size+10 + "px" )
             .style ( "width", headstart.list_width + "px")
             .style ( "height", headstart.list_height + "px" )
            .append( "div" )

@@ -15,11 +15,12 @@ Headstart = function(host, path, tag, files, options) {
    ];
 
   var divs = [
-     "main"
-     ,"subdiscipline_title"
-     ,"headstart-chart"
-     ,"papers_list_container"
-     ,"paper_frame"
+     "main",
+     "subdiscipline_title",
+     "vis_row",
+     "headstart-chart",
+     "papers_list_container",
+     "paper_frame"
    ];
 
   var script_sources = [
@@ -35,6 +36,29 @@ Headstart = function(host, path, tag, files, options) {
   addDiv = function(id, append_tag) {
     var current_div = document.createElement('div');
     current_div.id = id;
+
+    if (id =="vis_row") {
+      cont = document.createElement('div');
+      cont.id = "container";
+      cont.className = "container-fluid";
+      //cont.style.marginLeft = "auto";
+      cont.style.marginRight = "auto";
+      document.getElementById(append_tag).appendChild(cont)
+
+      current_div.className = "row";
+      return document.getElementById("container").appendChild(current_div);
+    }
+
+    if (id=="headstart-chart") {
+      current_div.className = "col-md-7 col-xs-12";
+      return document.getElementById("vis_row").appendChild(current_div);
+    }
+
+    if (id=="papers_list_container") {
+      current_div.className = "col-md-5 col-xs-12";
+      return document.getElementById("vis_row").appendChild(current_div);
+    }
+
     return document.getElementById(append_tag).appendChild(current_div);
   }
 
@@ -70,6 +94,7 @@ Headstart = function(host, path, tag, files, options) {
         script_sources.forEach(function(script_source) {
           var source = 'http://' + host + path + vis_directory + script_source.source;
           var this_script = addScript(source, 'head', false);
+
           if (typeof script_source.final !== 'undefined') {
               this_script.onload = function() {
                   headstart = new HeadstartFSM(
