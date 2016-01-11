@@ -29,7 +29,7 @@ BubblesFSM.prototype = {
     }
 
     this.appendForeignObjectTo( bubbleFrames );
-    this.adjustBubbleTitleSizeTo( bubbleFrames, "12px" );
+    // this.adjustBubbleTitleSizeTo( bubbleFrames, "12px" );
     this.resetCirclePosition();
   },
 
