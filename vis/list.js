@@ -24,7 +24,8 @@ var list = StateMachine.create({
         onshow: function( event, from, to ) {
             // if the papers_force has stopped.
             if(!papers.is("loading")) {
-                d3.select("#sort_container").style("display", "block"); 
+                d3.select("#sort_container").style("display", "block");
+                d3.select("#input_container").style("display", "block");
                 d3.select( "#papers_list"     ).style("display", "block");
                 d3.select( "#left_arrow"      ).text("\u25B2");
                 d3.select( "#right_arrow"     ).text("\u25B2");
@@ -33,7 +34,8 @@ var list = StateMachine.create({
         },
 
         onhide: function( event, from, to ) {
-            d3.select("#sort_container").style("display", "none"); 
+            d3.select("#sort_container").style("display", "none");
+            d3.select("#input_container").style("display", "none");
             d3.select( "#papers_list"     ).style("display", "none");
             d3.select( "#left_arrow"      ).text("\u25BC");
             d3.select( "#right_arrow"     ).text("\u25BC");
@@ -56,12 +58,13 @@ list.drawShowHideContainer = function() {
     var list_show_hide_container =
         d3.select ( "#papers_list_container" )
             //.style ( "left",  headstart.max_chart_size+10 + "px" )
-            .style ( "width", headstart.list_width + "px")
-            .style ( "height", headstart.list_height + "px" )
+            //.style ( "width", headstart.list_width + "px")
+            // .style ( "height", headstart.list_height + "px" )
            .append( "div" )
             .attr  ( "id", "show_hide_container" )
-            .style ( "width", headstart.list_width-10 + "px" )
-            .style ( "height", headstart.list_height + "px" );
+            .classed("col-xs-12", true)
+            //.style ( "width", headstart.list_width-10 + "px" )
+            // .style ( "height", headstart.list_height + "px" );
 
     return list_show_hide_container;
 }
@@ -69,43 +72,66 @@ list.drawShowHideContainer = function() {
 list.drawList = function() {
 
     var list_show_hide_container = this.drawShowHideContainer();
-    var show_hide = list_show_hide_container.append("div").attr("id", "show_hide");
-    this.drawLeftArrow(show_hide);
-    this.drawLabel(show_hide);
-    this.drawRightArrow(show_hide);
+
+    var show_hide = list_show_hide_container.append("div")
+      .attr("id", "show_hide")
+      .classed("col-xs-12", true);
+
+    showhide_row = show_hide.append("div").classed("row",true)
+
+    this.drawLeftArrow(showhide_row);
+    this.drawLabel(showhide_row);
+    this.drawRightArrow(showhide_row);
 
     list_show_hide_container.append("div")
       .attr("id", "input_container")
+      .classed("col-xs-6", true)
+      .style("display", "none")
       .append("input")
+      .classed("form-control",true)
       .attr("type", "text")
-      .attr("value", "Search...")
+      .attr("placeholder", "Search...")
       .attr("oninput", "filterList(event)")
-      .attr("size", 15)
+      .attr("size", 15);
+
     list_show_hide_container.append("div")
       .attr("id", "sort_container")
+      .classed("col-xs-6", true)
       .style("display", "none");
 
-    var papers_list = list_show_hide_container
-                            .append("div")
+    var papers_list = d3.select("#papers_list_container").append("div")
                             .attr("id", "papers_list")
                             .style("height", headstart.max_chart_size - headstart.list_height_correction + "px")
-                            .style("width", headstart.list_width - 10 + "px")
+                            //.style("width", headstart.list_width - 10 + "px")
                             .style("display", "none")
 
 
     var container = d3.select("#sort_container")
                       .append("ul")
-                      .attr("class", "filter");
+                      .attr("class", "filter")
+                      .append("div")
+                      .classed("btn-group",true)
+                      .attr("id","filter-buttons");
 
     addSortOption = function(sort_option, selected) {
-      container.append("li")
+      d3.select("#filter-buttons").append("button")
+        .attr("type","button")
+        .classed("btn btn-default",true)
+        // .attr("class", function() { return selected?("selected"):("")})
+        .attr("id", "sort_" + sort_option)
+        .on("click", function() {
+          headstart.recordAction("none", "sortBy", headstart.user_id, "listsort", null, "sort_option=" + sort_option);
+          sortBy(sort_option);
+        }).text(sort_option);
+
+/*      container.append("li")
         .append("a")
         .attr("class", function() { return selected?("selected"):("")})
         .attr("id", "sort_" + sort_option)
         .on("click", function() {
           headstart.recordAction("none", "sortBy", headstart.user_id, "listsort", null, "sort_option=" + sort_option);
           sortBy(sort_option);
-        }).text(sort_option);
+        }).text(sort_option);*/
     }
 
     addSortOption(headstart.sort_options[0], true);
@@ -131,11 +157,11 @@ function sortBy(field) {
       return stringCompare(a[field], b[field])
       })
 
-    d3.selectAll(".selected")
-      .attr("class", "")
+    d3.selectAll(".active")
+      .attr("class", "btn btn-default")
 
     d3.select("#sort_" + field)
-      .attr("class", "selected");
+      .attr("class", "btn btn-default active");
 }
 
 function stringCompare(a, b) {
@@ -617,24 +643,25 @@ list.testImage = function(image_src) {
 
 // just a wrapper
 list.drawLeftArrow = function(element) {
-    element.append("div").attr("id", "left_arrow")
-           .style("width", "30px")
-           .text("\u25BC");
+    element.append("div")
+      .attr("id", "left_arrow")
+      .classed("col-xs-2", true)
+      .text("\u25BC");
 }
 
 // just a wrapper
 list.drawRightArrow = function(element) {
   element.append("div")
-         .attr("id", "right_arrow")
-         .style("width", "30px")
-         .text("\u25BC");
+    .attr("id", "right_arrow")
+    .classed("col-xs-2", true)
+    .text("\u25BC");
 }
 
 // just a wrapper
 list.drawLabel = function(element) {
   element.append("div")
          .attr("id", "show_hide_label_container")
-         .style("width", headstart.list_width - 70 + "px")
+         .classed("col-xs-8", true)
          .append("strong")
          .attr("id", "show_hide_label")
          .text("Show papers");
