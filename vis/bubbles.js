@@ -233,7 +233,6 @@ BubblesFSM.prototype = {
     initCircleClickListener: function() {
         var b = this;
         d3.selectAll("circle").on("click", function(bubble) {
-            // b.zoomin(d);
             Mediator.publish("click", bubble, b)
         });
     },
@@ -955,7 +954,7 @@ BubblesFSM.prototype = {
     onzoomout: function(event, from, to) {
         this.resetCircleDesign();
         papers.zoomout();
-        popup.initClickListenersForNav();
+        // popup.initClickListenersForNav();
     },
 
     // we only whant to be able to "zoom" when the papers are
@@ -971,7 +970,7 @@ BubblesFSM.prototype = {
         }
         this.initMouseListeners();
         papers.zoom();
-        popup.initClickListenersForNav();
+        // popup.initClickListenersForNav();
     }
 
 };

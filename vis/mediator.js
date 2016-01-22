@@ -7,5 +7,4 @@ function zoom(bubble, bubbles) {
     }
     bubbles.initMouseListeners();
     papers.zoom();
-    popup.initClickListenersForNav();
 }
