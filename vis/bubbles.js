@@ -214,15 +214,11 @@ BubblesFSM.prototype = {
 
     // initialize mouseover, mouseout circle listeners
     initCircleListeners: function() {
-        var this_bubble = this;
-        d3.selectAll("circle").on("mouseover", function(d) {
-            if (!this_bubble.is("hoverbig")) {
-                this_bubble.mouseover(this, d);
-                headstart.recordAction(d.id, "circle_mouseover", headstart.user_id, "none", null);
-            }
-        }).on("mouseout", function(d) {
-            this_bubble.mouseout(this, d);
-            headstart.recordAction(d.id, "circle_mouseout", headstart.user_id, "none", null);
+        var b_fsm = this;
+        d3.selectAll("circle").on("mouseover", function(bubble) {
+            Mediator.publish("mouseover", b_fsm, bubble, this)
+        }).on("mouseout", function(bubble) {
+            Mediator.publish("mouseout", b_fsm, bubble, this)
         });
 
         if (headstart.is("normal") || headstart.is("switchfiles"))
@@ -231,9 +227,9 @@ BubblesFSM.prototype = {
 
     // initialize just the circle click listeners
     initCircleClickListener: function() {
-        var b = this;
-        d3.selectAll("circle").on("click", function(bubble) {
-            Mediator.publish("click", bubble, b)
+        var b_fsm = this;
+        d3.selectAll("circle").on("click", function(bubbles) {
+            Mediator.publish("click", bubbles, b_fsm)
         });
     },
 
@@ -494,77 +490,15 @@ BubblesFSM.prototype = {
         }
     },
 
-    zoom: function(d, i) {
-
-        headstart.is_zoomed = true;
-
-        var previous_zoom_node = headstart.current_zoom_node;
-
-        list.reset();
-
-        if (typeof d != 'undefined') {
-            list.papers_list.selectAll("#list_holder")
-                .style("display", function(d) {
-                    return d.filtered_out ? "none" : "inline"
-                });
-
-            list.papers_list.selectAll("#list_holder")
-                .filter(function(x, i) {
-                    return (headstart.use_area_uri) ? (x.area_uri != d.area_uri) : (x.area != d.title);
-                })
-                .style("display", "none");
-        }
-
-        d3.event.stopPropagation();
-
-        if (previous_zoom_node != null && typeof previous_zoom_node != 'undefined') {
-
-            if (typeof d != 'undefined') {
-                if (d3.select(previous_zoom_node).data()[0].title == d.title) {
-                    return;
-                }
-            } else {
-                resetList();
-
-                list.papers_list.selectAll("#list_holder")
-                    .style("display", function(d) {
-                        return d.filtered_out ? "none" : "inline"
-                    });
-
-                d3.event.stopPropagation();
-                return;
-            }
-        }
-
-        var zoom_node = headstart.chart.selectAll("circle")
-            .filter(function(x, i) {
-                if (d != null)
-                    return x.title == d.title;
-                else
-                    return null;
-            })
-
-        headstart.current_zoom_node = zoom_node.node();
-
-        if (headstart.current_zoom_node != null)
-            toFront(headstart.current_zoom_node.parentNode);
-
-        if (previous_zoom_node !== null) {
-            toBack(previous_zoom_node.parentNode);
-        }
-
-
-        this.bringPapersToFront(d);
-
-        zoom_node.on("mouseover", null)
-            .on("mouseout", null);
-
+    zoom: function(d, zoom_node) {
+        // Make all circles opacity 1
         headstart.chart.selectAll("circle")
             .attr("class", "zoom_selected")
             .style("fill-opacity", "1")
 
+        // All non-selected circles opacity 0.1
         headstart.chart.selectAll("circle")
-            .filter(function(x, i) {
+            .filter(function(x) {
                 if (d != null)
                     return (x.title != d.title)
                 else
@@ -575,14 +509,16 @@ BubblesFSM.prototype = {
             .on("mouseover", null)
             .on("mouseout", null)
 
+        // Change title
         d3.select("#subdiscipline_title h1").text("Area: " + d.title);
 
+        // make papers enlargable
         d3.selectAll("div.paper_holder")
             .on("mouseover", papers.enlargePaper);
 
         d3.selectAll("circle")
             .on("click", function(d) {
-                return bubbles.zoom(d);
+                Mediator.publish("click", bubble, b);
             })
             .style("display", "block");
 
@@ -594,7 +530,7 @@ BubblesFSM.prototype = {
             })
 
         d3.selectAll(".paper")
-            .filter(function(x, i) {
+            .filter(function(x) {
                 return (headstart.use_area_uri) ? (x.area_uri != d.area_uri) : (x.area != d.title);
             })
             .style("display", "none");
@@ -954,25 +890,7 @@ BubblesFSM.prototype = {
     onzoomout: function(event, from, to) {
         this.resetCircleDesign();
         papers.zoomout();
-        // popup.initClickListenersForNav();
     },
-
-    // we only whant to be able to "zoom" when the papers are
-    // ready
-    onbeforezoomin: function(event, from, to) {
-        if (papers.is("loading"))
-            return false;
-    },
-
-    onzoomin: function(event, from, to, d) {
-        if (d !== undefined) {
-            this.zoom(d);
-        }
-        this.initMouseListeners();
-        papers.zoom();
-        // popup.initClickListenersForNav();
-    }
-
 };
 
 
