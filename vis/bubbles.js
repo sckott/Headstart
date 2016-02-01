@@ -7,6 +7,7 @@ BubblesFSM = function() {
     this.areas_array = [];
     this.startup();
     this.title = "default-title";
+    this.state = "empty";
 };
 
 BubblesFSM.prototype = {
@@ -18,12 +19,12 @@ BubblesFSM.prototype = {
     draw: function() {
         var bubbleFrames = this.drawBubbleFrames();
 
-        if (headstart.is("normal") || headstart.is("switchfiles")) {
+        if (main_canvas.is("normal") || main_canvas.is("switchfiles")) {
             this.positionBubbles(bubbleFrames);
             this.addClassNamesToCircles(bubbleFrames);
         }
 
-        if (headstart.is("timeline")) {
+        if (main_canvas.is("timeline")) {
             this.positionBubbles2(bubbleFrames, this.id);
             this.addClassNamesToCirclesForGrouping(bubbleFrames);
         }
@@ -34,7 +35,7 @@ BubblesFSM.prototype = {
     },
 
     drawBubbleFrames: function() {
-        return headstart.chart.data(this.areas_array).selectAll("g.node")
+        return main_canvas.chart.data(this.areas_array).selectAll("g.node")
             .data(this.areas_array)
             .enter().append("g").attr("class", "bubble_frame");
     },
@@ -76,7 +77,7 @@ BubblesFSM.prototype = {
                 d.paper_abstract = "";
             }
 
-            if (headstart.content_based == false) {
+            if (main_canvas.content_based == false) {
                 d.readers = +d.readers;
                 d.internal_readers = +d.readers + 1;
             } else {
@@ -117,13 +118,13 @@ BubblesFSM.prototype = {
 
         });
 
-        headstart.chart_x.domain(d3.extent(init_data, function(d) {
+        main_canvas.chart_x.domain(d3.extent(init_data, function(d) {
             return d.x
         }));
-        headstart.chart_y.domain(d3.extent(init_data, function(d) {
+        main_canvas.chart_y.domain(d3.extent(init_data, function(d) {
             return d.y * -1
         }));
-        headstart.diameter_size.domain(d3.extent(init_data, function(d) {
+        main_canvas.diameter_size.domain(d3.extent(init_data, function(d) {
             return d.internal_readers
         }));
 
@@ -131,16 +132,16 @@ BubblesFSM.prototype = {
         init_data.forEach(function(d) {
 
             // construct rectangles of a golden cut
-            d.diameter = headstart.diameter_size(d.internal_readers);
+            d.diameter = main_canvas.diameter_size(d.internal_readers);
 
-            d.width = headstart.paper_width_factor * Math.sqrt(Math.pow(d.diameter, 2) / 2.6);
-            d.height = headstart.paper_height_factor * Math.sqrt(Math.pow(d.diameter, 2) / 2.6);
+            d.width = main_canvas.paper_width_factor * Math.sqrt(Math.pow(d.diameter, 2) / 2.6);
+            d.height = main_canvas.paper_height_factor * Math.sqrt(Math.pow(d.diameter, 2) / 2.6);
 
             // scale x and y
-            d.x = headstart.chart_x(d.x);
-            d.y = headstart.chart_y(d.y * -1);
+            d.x = main_canvas.chart_x(d.x);
+            d.y = main_canvas.chart_y(d.y * -1);
 
-            var area = (headstart.use_area_uri) ? (d.area_uri) : (d.area);
+            var area = (main_canvas.use_area_uri) ? (d.area_uri) : (d.area);
 
             if (area in areas) {
                 areas[area].papers.push(d);
@@ -196,10 +197,10 @@ BubblesFSM.prototype = {
     // blasen -> wenn über blase gehovered und paper sichtbar
     // dann soll auch auf paper geclicked werden können.
     makePaperClickable: function(d) {
-        headstart.current_circle = headstart.chart.selectAll("circle")
+        main_canvas.current_circle = main_canvas.chart.selectAll("circle")
             .filter(function(x) {
                 if (d != null) {
-                    if (headstart.use_area_uri)
+                    if (main_canvas.use_area_uri)
                         return x.area_uri == d.area_uri;
                     else
                         return x.title == d.area;
@@ -208,7 +209,7 @@ BubblesFSM.prototype = {
                 }
             })
 
-        zoom(headstart.current_circle.data()[0]);
+        zoom(main_canvas.current_circle.data()[0]);
         d3.event.stopPropagation(); // click stopps, "event bubbles up"
     },
 
@@ -216,12 +217,12 @@ BubblesFSM.prototype = {
     initCircleListeners: function() {
         var b_fsm = this;
         d3.selectAll("circle").on("mouseover", function(bubble) {
-            Mediator.publish("mouseover", b_fsm, bubble, this)
+            headstart.mediator.publish("mouseover", b_fsm, bubble, this)
         }).on("mouseout", function(bubble) {
-            Mediator.publish("mouseout", b_fsm, bubble, this)
+            headstart.mediator.publish("mouseout", b_fsm, bubble, this)
         });
 
-        if (headstart.is("normal") || headstart.is("switchfiles"))
+        if (main_canvas.is("normal") || main_canvas.is("switchfiles"))
             this.initCircleClickListener();
     },
 
@@ -229,15 +230,15 @@ BubblesFSM.prototype = {
     initCircleClickListener: function() {
         var b_fsm = this;
         d3.selectAll("circle").on("click", function(bubbles) {
-            Mediator.publish("click", bubbles, b_fsm)
+            headstart.mediator.publish("click", bubbles, b_fsm)
         });
     },
 
     // initialize just the mousemovement listeners
     initMouseListenersForTitles: function() {
         d3.selectAll("#area_title").on("mouseover", function(d) {
-            if (headstart.current != "timeline")
-                headstart.bubbles[headstart.current_file_number].hideCircle(this);
+            if (main_canvas.current != "timeline")
+                main_canvas.bubbles[main_canvas.current_file_number].hideCircle(this);
             else {
 
                 var underlying_circle = d3.selectAll("circle")
@@ -248,15 +249,15 @@ BubblesFSM.prototype = {
                             return null
                     })
 
-                headstart.bubbles[headstart.current_file_number].resetCircleDesignTimeLine(underlying_circle[0][0]);
-                headstart.bubbles[headstart.current_file_number].highlightAllCirclesWithLike(underlying_circle[0][0]);
-                headstart.bubbles[headstart.current_file_number].drawConnectionLines(underlying_circle[0][0]);
+                main_canvas.bubbles[main_canvas.current_file_number].resetCircleDesignTimeLine(underlying_circle[0][0]);
+                main_canvas.bubbles[main_canvas.current_file_number].highlightAllCirclesWithLike(underlying_circle[0][0]);
+                main_canvas.bubbles[main_canvas.current_file_number].drawConnectionLines(underlying_circle[0][0]);
             }
         });
 
         d3.selectAll("#area_title").on("mouseout", function(d) {
-            if (headstart.current != "timeline")
-                headstart.bubbles[headstart.current_file_number].showCircle(this);
+            if (main_canvas.current != "timeline")
+                main_canvas.bubbles[main_canvas.current_file_number].showCircle(this);
         });
     },
 
@@ -309,7 +310,7 @@ BubblesFSM.prototype = {
         for (var i = 0; i < sorted_circles.length - 1; i++) {
             var circleStart = sorted_circles[i].getBoundingClientRect();
             var circleEnd = sorted_circles[i + 1].getBoundingClientRect();
-            headstart.svg.append("line")
+            main_canvas.svg.append("line")
                 .attr("x1", circleStart.right + window.pageXOffset)
                 .attr("x2", circleEnd.left + window.pageXOffset)
                 .attr("y1", circleStart.top)
@@ -354,7 +355,7 @@ BubblesFSM.prototype = {
 
     bringPapersToFront: function(d) {
         var papers = d3.selectAll(".paper").filter(function(x, i) {
-            return (headstart.use_area_uri) ? (x.area_uri == d.area_uri) : (x.area == d.title);
+            return (main_canvas.use_area_uri) ? (x.area_uri == d.area_uri) : (x.area == d.title);
         });
 
         for (var i = 0; i < papers[0].length; i++) {
@@ -374,14 +375,14 @@ BubblesFSM.prototype = {
     // max_chart_size
     positionBubbles2: function(bubbles, bubbles_id) {
         bubbles.attr("transform", function(d) {
-            var x_pos = d.x + ((bubbles_id - 1) * headstart.max_chart_size);
+            var x_pos = d.x + ((bubbles_id - 1) * main_canvas.max_chart_size);
             return "translate(" + x_pos + "," + d.y + ")";
         });
     },
 
     // set the title size of bubbles to px
     adjustBubbleTitleSizeTo: function(bubbles, px) {
-        if (headstart.max_chart_size < 720) {
+        if (main_canvas.max_chart_size < 720) {
             bubbles.selectAll("h2").style("font-size", px);
         }
     },
@@ -446,7 +447,7 @@ BubblesFSM.prototype = {
             readers.push(sum_readers);
         }
 
-        headstart.circle_size.domain(d3.extent(readers));
+        main_canvas.circle_size.domain(d3.extent(readers));
         var area_x = [];
         var area_y = [];
 
@@ -468,17 +469,17 @@ BubblesFSM.prototype = {
             areas[area].y = mean_y;
             area_x.push(mean_x);
             area_y.push(mean_y);
-            areas[area].r = headstart.circle_size(sum_readers_2);
+            areas[area].r = main_canvas.circle_size(sum_readers_2);
         }
 
-        headstart.chart_x_circle.domain(d3.extent(area_x));
-        headstart.chart_y_circle.domain(d3.extent(area_y));
+        main_canvas.chart_x_circle.domain(d3.extent(area_x));
+        main_canvas.chart_y_circle.domain(d3.extent(area_y));
 
         for (area in areas) {
             var new_area = [];
             new_area["title"] = areas[area].title;
-            new_area["x"] = headstart.chart_x_circle(areas[area].x);
-            new_area["y"] = headstart.chart_y_circle(areas[area].y);
+            new_area["x"] = main_canvas.chart_x_circle(areas[area].x);
+            new_area["y"] = main_canvas.chart_y_circle(areas[area].y);
             new_area["r"] = areas[area].r;
             new_area["height_html"] = Math.sqrt(Math.pow(areas[area].r, 2) * 2);
             new_area["width_html"] = Math.sqrt(Math.pow(areas[area].r, 2) * 2);
@@ -492,12 +493,12 @@ BubblesFSM.prototype = {
 
     zoom: function(d, zoom_node) {
         // Make all circles opacity 1
-        headstart.chart.selectAll("circle")
+        main_canvas.chart.selectAll("circle")
             .attr("class", "zoom_selected")
             .style("fill-opacity", "1")
 
         // All non-selected circles opacity 0.1
-        headstart.chart.selectAll("circle")
+        main_canvas.chart.selectAll("circle")
             .filter(function(x) {
                 if (d != null)
                     return (x.title != d.title)
@@ -518,7 +519,7 @@ BubblesFSM.prototype = {
 
         d3.selectAll("circle")
             .on("click", function(d) {
-                Mediator.publish("click", bubble, b);
+                headstart.mediator.publish("click", bubble, b);
             })
             .style("display", "block");
 
@@ -531,30 +532,30 @@ BubblesFSM.prototype = {
 
         d3.selectAll(".paper")
             .filter(function(x) {
-                return (headstart.use_area_uri) ? (x.area_uri != d.area_uri) : (x.area != d.title);
+                return (main_canvas.use_area_uri) ? (x.area_uri != d.area_uri) : (x.area != d.title);
             })
             .style("display", "none");
 
         d3.selectAll("#region")
             .style("fill-opacity", 1)
 
-        headstart.circle_zoom = headstart.circle_zoom_factor / d.r / 2;
-        headstart.x.domain([d.x - d.r, d.x + d.r]);
-        headstart.y.domain([d.y - d.r, d.y + d.r]);
+        main_canvas.circle_zoom = main_canvas.circle_zoom_factor / d.r / 2;
+        main_canvas.x.domain([d.x - d.r, d.x + d.r]);
+        main_canvas.y.domain([d.y - d.r, d.y + d.r]);
 
-        var t = headstart.chart.transition()
-            .duration(headstart.transition_duration);
+        var t = main_canvas.chart.transition()
+            .duration(main_canvas.transition_duration);
 
-        headstart.bubbles[headstart.current_file_number].createTransition(t, d.title);
+        main_canvas.bubbles[main_canvas.current_file_number].createTransition(t, d.title);
 
-        headstart.recordAction(d.id, "zoom_in", headstart.user_id, "none", null);
+        main_canvas.recordAction(d.id, "zoom_in", main_canvas.user_id, "none", null);
 
         d3.event.stopPropagation();
     },
 
     zoomOut: function() {
 
-        if (!headstart.is_zoomed) {
+        if (!main_canvas.is_zoomed) {
             return;
         }
 
@@ -562,22 +563,22 @@ BubblesFSM.prototype = {
             return;
         }
 
-        headstart.is_zoomed = false;
+        main_canvas.is_zoomed = false;
 
         list.reset();
 
-        if (headstart.current_zoom_node !== null) {
-            toFront(headstart.current_zoom_node.parentNode);
+        if (main_canvas.current_zoom_node !== null) {
+            toFront(main_canvas.current_zoom_node.parentNode);
 
-            var circle_data = d3.select(headstart.current_zoom_node).data();
-            headstart.recordAction(circle_data.id, "zoom_out", headstart.user_id, "none", null);
+            var circle_data = d3.select(main_canvas.current_zoom_node).data();
+            main_canvas.recordAction(circle_data.id, "zoom_out", main_canvas.user_id, "none", null);
         } else {
-            headstart.recordAction("none", "zoom_out", headstart.user_id, "none", null);
+            main_canvas.recordAction("none", "zoom_out", main_canvas.user_id, "none", null);
         }
 
-        if (headstart.current_enlarged_paper !== null) {
-            headstart.current_enlarged_paper.paper_selected = false;
-            headstart.current_enlarged_paper = null;
+        if (main_canvas.current_enlarged_paper !== null) {
+            main_canvas.current_enlarged_paper.paper_selected = false;
+            main_canvas.current_enlarged_paper = null;
         }
 
         list.papers_list.selectAll("#list_holder")
@@ -585,10 +586,10 @@ BubblesFSM.prototype = {
                 return d.filtered_out ? "none" : "inline"
             });
 
-        var t = headstart.chart.transition()
-            .duration(headstart.transition_duration)
+        var t = main_canvas.chart.transition()
+            .duration(main_canvas.transition_duration)
             .each('end', function(d) {
-                headstart.chart.selectAll("#area_title_object")
+                main_canvas.chart.selectAll("#area_title_object")
                     .style("display", "block")
                     .style("visibility", "visible");
             });
@@ -605,7 +606,7 @@ BubblesFSM.prototype = {
 
         t.selectAll("path.dogear")
             .attr("d", function(d) {
-                return papers.createDogearPath(d.width * (1 - headstart.dogear_width), 0, d.width, d.height);
+                return papers.createDogearPath(d.width * (1 - main_canvas.dogear_width), 0, d.width, d.height);
             });
 
         //webkit bug
@@ -619,10 +620,10 @@ BubblesFSM.prototype = {
 
         t.selectAll("div.metadata")
             .style("width", function(d) {
-                return d.width * (1 - headstart.dogear_width) + "px"
+                return d.width * (1 - main_canvas.dogear_width) + "px"
             })
             .style("height", function(d) {
-                return (headstart.content_based) ? (d.height) : (d.height * 0.8 + "px")
+                return (main_canvas.content_based) ? (d.height) : (d.height * 0.8 + "px")
             });
 
         t.selectAll("div.readers")
@@ -643,10 +644,10 @@ BubblesFSM.prototype = {
 
         popup.drawInfoLinkWithTitle("What's this?");
 
-        if (headstart.show_timeline)
+        if (main_canvas.show_timeline)
             popup.drawTimeLineLink();
 
-        if (headstart.show_dropdown)
+        if (main_canvas.show_dropdown)
             popup.drawDropdown();
 
 
@@ -673,7 +674,7 @@ BubblesFSM.prototype = {
 
         papers.initPaperClickHandler();
 
-        headstart.current_zoom_node = null;
+        main_canvas.current_zoom_node = null;
     },
 
     resetCircleDesignTimeLine: function(circle) {
@@ -687,16 +688,16 @@ BubblesFSM.prototype = {
     },
 
     resetCircleDesign: function() {
-        if (headstart.current_circle != null) {
+        if (main_canvas.current_circle != null) {
             d3.selectAll("circle")
                 .attr("class", "area")
                 .style("fill-opacity", "0.8");
 
             var papers = d3.selectAll(".paper")
                 .filter(function(x) {
-                    if (headstart.current_circle.data()[0] != null) {
-                        var area = headstart.current_circle.data()[0];
-                        return (headstart.use_area_uri) ? (x.area_uri == area.area_uri) : (x.area == area.title);
+                    if (main_canvas.current_circle.data()[0] != null) {
+                        var area = main_canvas.current_circle.data()[0];
+                        return (main_canvas.use_area_uri) ? (x.area_uri == area.area_uri) : (x.area == area.title);
                     } else {
                         return null
                     }
@@ -738,27 +739,27 @@ BubblesFSM.prototype = {
 
         t.selectAll("circle")
             .attr("cx", function(d) {
-                return headstart.x(d.x) - d.x;
+                return main_canvas.x(d.x) - d.x;
             })
             .attr("cy", function(d) {
-                return headstart.y(d.y) - d.y;
+                return main_canvas.y(d.y) - d.y;
             })
             .attr("r", function(d) {
-                return headstart.circle_zoom * d.r;
+                return main_canvas.circle_zoom * d.r;
             });
 
         t.selectAll("g.paper")
             .attr("transform", function(g) {
-                return "translate(" + headstart.x(g.x) + "," + headstart.y(g.y) + ")";
+                return "translate(" + main_canvas.x(g.x) + "," + main_canvas.y(g.y) + ")";
             });
 
         var region = function(d) {
-            return papers.createPaperPath(0, 0, d.width * headstart.circle_zoom, d.height * headstart.circle_zoom)
+            return papers.createPaperPath(0, 0, d.width * main_canvas.circle_zoom, d.height * main_canvas.circle_zoom)
         }
 
         var dogear = function(d) {
-            return papers.createDogearPath(d.width * (1 - headstart.dogear_width) * headstart.circle_zoom,
-                0, d.width * headstart.circle_zoom, d.height * headstart.circle_zoom);
+            return papers.createDogearPath(d.width * (1 - main_canvas.dogear_width) * main_canvas.circle_zoom,
+                0, d.width * main_canvas.circle_zoom, d.height * main_canvas.circle_zoom);
         }
 
         t.selectAll("#region")
@@ -770,24 +771,24 @@ BubblesFSM.prototype = {
         //webkit bug
         t.selectAll("#article_metadata")
             .attr("width", function(d) {
-                return d.width * headstart.circle_zoom
+                return d.width * main_canvas.circle_zoom
             })
             .attr("height", function(d) {
-                return d.height * headstart.circle_zoom
+                return d.height * main_canvas.circle_zoom
             });
 
         t.selectAll("div.metadata")
             .style("height", function(d) {
-                return (headstart.content_based) ? (d.height * headstart.circle_zoom + "px") : (d.height * headstart.circle_zoom - 20 + "px");
+                return (main_canvas.content_based) ? (d.height * main_canvas.circle_zoom + "px") : (d.height * main_canvas.circle_zoom - 20 + "px");
             })
             .style("width", function(d) {
-                return d.width * headstart.circle_zoom * (1 - headstart.dogear_width) + "px";
+                return d.width * main_canvas.circle_zoom * (1 - main_canvas.dogear_width) + "px";
             });
 
         t.selectAll("div.readers")
             .style("height", "15px")
             .style("width", function(d) {
-                return d.width * headstart.circle_zoom + "px";
+                return d.width * main_canvas.circle_zoom + "px";
             })
             .style("margin-top", "3px");
 
@@ -802,32 +803,32 @@ BubblesFSM.prototype = {
         this.prepareData(csv, recommendation_data);
         this.prepareAreas();
 
-        if (headstart.is("timeline")) {
+        if (main_canvas.is("timeline")) {
             this.draw();
             this.initMouseListeners();
         }
 
-        headstart.recordAction("none", "start", headstart.user_id, "start_bubble", null, null, recommendation_data);
+        main_canvas.recordAction("none", "start", main_canvas.user_id, "start_bubble", null, null, recommendation_data);
     },
 
     onbeforemouseover: function(event, from, to, circle, d) {
-        if (headstart.is("normal") || headstart.is("switchfiles")) {
+        if (main_canvas.is("normal") || main_canvas.is("switchfiles")) {
             this.resetCircleDesign();
         }
     },
 
     onmouseover: function(event, from, to, circle, d) {
 
-        headstart.current_circle = d3.select(circle);
-        if (headstart.is("timeline")) {
+        main_canvas.current_circle = d3.select(circle);
+        if (main_canvas.is("timeline")) {
             this.resetCircleDesignTimeLine(circle);
             this.highlightAllCirclesWithLike(circle);
             this.drawConnectionLines(circle);
             //hideSibling(circle);
         } else {
             this.resetCircleDesign();
-            this.highlightCircle(headstart.current_circle);
-            toFront(headstart.current_circle.node().parentNode);
+            this.highlightCircle(main_canvas.current_circle);
+            toFront(main_canvas.current_circle.node().parentNode);
             this.bringPapersToFront(d);
             hideSibling(circle);
 
@@ -867,7 +868,7 @@ BubblesFSM.prototype = {
 
     onmouseout: function(event, from, to, circle, d) {
 
-        if (headstart.is("normal") || headstart.is("switchfiles")) {
+        if (main_canvas.is("normal") || main_canvas.is("switchfiles")) {
             if (event == "notzoomedmouseout") {
                 this.resetCircleDesign();
                 if (!papers.is("loading")) {
@@ -879,7 +880,7 @@ BubblesFSM.prototype = {
             }
         }
 
-        if (headstart.is("timeline")) {
+        if (main_canvas.is("timeline")) {
             this.resetCircleDesignTimeLine(circle);
             this.removeAllConnections();
         } else {

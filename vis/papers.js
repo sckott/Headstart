@@ -73,7 +73,7 @@ var papers = StateMachine.create({
         },
 
         onclick: function( event, from, to, d ) {
-          if(!headstart.is_zoomed) {
+          if(!main_canvas.is_zoomed) {
             return bubbles.makePaperClickable(d);
           }
         },
@@ -96,7 +96,7 @@ var papers = StateMachine.create({
           if (holder_div !== undefined)
             this.shrinkPaper(d, holder_div);
 
-          headstart.bubbles[headstart.current_file_number].mouseout();
+          main_canvas.bubbles[main_canvas.current_file_number].mouseout();
         }
 
     }
@@ -104,7 +104,7 @@ var papers = StateMachine.create({
 
 papers.drawPapers = function( bubbles ) {
 
-   var nodes = headstart.chart.selectAll("g.node")
+   var nodes = main_canvas.chart.selectAll("g.node")
                .data(bubbles.data)
                .enter().append("g")
                .attr("class", "paper")
@@ -155,11 +155,11 @@ papers.drawDogEarPath = function(nodes) {
 papers.initPaperClickHandler = function() {
   d3.selectAll(".paper_holder").on( "click", function(d) {
     if (!papers.is("loading")) {
-        if(!headstart.is_zoomed) {
-            var current_node = headstart.chart.selectAll("circle")
+        if(!main_canvas.is_zoomed) {
+            var current_node = main_canvas.chart.selectAll("circle")
             .filter(function (x) {
                 if (d != null) {
-                    if (headstart.use_area_uri)
+                    if (main_canvas.use_area_uri)
                         return (x.area_uri == d.area_uri);
                       else
                         return (x.title == d.area);
@@ -169,7 +169,7 @@ papers.initPaperClickHandler = function() {
             })
             
             d3.event.stopPropagation();
-            headstart.bubbles[headstart.current_file_number].zoomin(current_node.data()[0]);
+            main_canvas.bubbles[main_canvas.current_file_number].zoomin(current_node.data()[0]);
         }
 
         
@@ -209,7 +209,7 @@ papers.populatePapersWithMetaData = function( xhtml ) {
     this.appendMetaDataTitle(metadata);
     this.appendMetaDataDetails(metadata);
     this.appendMetaDataPublicationYear(metadata);
-    if(!headstart.content_based) {
+    if(!main_canvas.content_based) {
       this.appendMetaDataReaders(xhtml);
     }
 }
@@ -217,7 +217,7 @@ papers.populatePapersWithMetaData = function( xhtml ) {
 papers.appendMetaDataCSSClass = function(xhtml) {
  return xhtml.append("div")
              .attr("class", "metadata")
-             .style("height", function (d) { return (headstart.content_based)?(d.height):(d.height * 0.8 + "px") })
+             .style("height", function (d) { return (main_canvas.content_based)?(d.height):(d.height * 0.8 + "px") })
              .style("width",  function (d) { return d.width  * 0.8 + "px" });
 }
 
@@ -250,17 +250,17 @@ papers.appendMetaDataReaders = function(xhtml) {
     .html(function (d) { return d.readers })
     .append("span")
     .attr("class", "readers_entity")
-    .html(" " + headstart.base_unit);
+    .html(" " + main_canvas.base_unit);
 }
 
 // create the path or "border" for papers
 papers.createPaperPath = function(x, y, width, height, correction_x, correction_y) {
 
     if (!correction_x)
-        correction_x = headstart.dogear_width;
+        correction_x = main_canvas.dogear_width;
 
     if (!correction_y)
-        correction_y = headstart.dogear_height;
+        correction_y = main_canvas.dogear_height;
 
     var h = width * (1 - correction_x);
     var l = width * correction_x;
@@ -275,15 +275,15 @@ papers.createPaperPath = function(x, y, width, height, correction_x, correction_
 
 papers.applyForce = function( bubbles ) {
   
-    headstart.force_areas.start();
+    main_canvas.force_areas.start();
     
-    if(!headstart.is_force_areas) {
-      headstart.force_areas.alpha(0.0);
+    if(!main_canvas.is_force_areas) {
+      main_canvas.force_areas.alpha(0.0);
     }
   
     var areas_count = 0;
     
-    headstart.force_areas.on("tick", function(e) {
+    main_canvas.force_areas.on("tick", function(e) {
         
         var alpha = e.alpha;
         
@@ -291,17 +291,17 @@ papers.applyForce = function( bubbles ) {
           return true;
         }*/
         
-        var current_bubbles = headstart.bubbles[headstart.current_file_number];
+        var current_bubbles = main_canvas.bubbles[main_canvas.current_file_number];
         
         current_bubbles.areas_array.forEach(function(a, i) {
             
             if(a.x - a.r < 0
-                || a.x + a.r > headstart.max_chart_size
+                || a.x + a.r > main_canvas.max_chart_size
                 || a.y - a.r < 0
-                || a.y + a.r > headstart.max_chart_size) {
+                || a.y + a.r > main_canvas.max_chart_size) {
                     
-                a.x += (headstart.max_chart_size/2 - a.x) * alpha;
-                a.y += (headstart.max_chart_size/2 - a.y) * alpha;
+                a.x += (main_canvas.max_chart_size/2 - a.x) * alpha;
+                a.y += (main_canvas.max_chart_size/2 - a.y) * alpha;
                     
             }
             
@@ -316,13 +316,13 @@ papers.applyForce = function( bubbles ) {
 
     });
 
-    headstart.force_papers.start();
+    main_canvas.force_papers.start();
     var papers_count = 0;
       
-    headstart.force_papers.on("tick", function(e) {
+    main_canvas.force_papers.on("tick", function(e) {
         var alpha = e.alpha;
         
-        var current_bubbles = headstart.bubbles[headstart.current_file_number];
+        var current_bubbles = main_canvas.bubbles[main_canvas.current_file_number];
         
         /*if (typeof current_bubbles == 'undefined' || current_bubbles == null) {
           return true;
@@ -332,7 +332,7 @@ papers.applyForce = function( bubbles ) {
             var current_area = "";
 
             for (area in bubbles.areas_array) {
-                if(headstart.use_area_uri) {
+                if(main_canvas.use_area_uri) {
                     if (current_bubbles.areas_array[area].area_uri == a.area_uri) {
                         current_area = current_bubbles.areas_array[area];
                         break;
@@ -376,7 +376,6 @@ papers.applyForce = function( bubbles ) {
 
         papers_count++;
     });
-
 }
 
 // construct circle around paper
@@ -404,7 +403,7 @@ papers.drawEntity = function( entity, alpha, count ) {
         || alpha <= 0.02 && alpha >= 0.01 && count %  10 == 0
         || alpha <= 0.01 && count %  10 == 0 ) {
 
-        headstart.chart.selectAll(entity)
+        main_canvas.chart.selectAll(entity)
         .attr("transform", function (d) {
             return "translate(" + d.x + "," + d.y + ")";
         });
@@ -433,7 +432,7 @@ papers.checkCollisions = function(a, b, alpha) {
 
 papers.shrinkPaper = function(d,holder) {
 
-    if(!headstart.is_zoomed) {
+    if(!main_canvas.is_zoomed) {
       return;
     }
 
@@ -460,15 +459,15 @@ papers.resizePaper = function(d, holder_div, resize_factor, color, opacity) {
     //current_g.parentNode.appendChild(current_g);
     toFront(current_g);
 
-    var region = papers.createPaperPath(0, 0, d.width*headstart.circle_zoom*resize_factor, d.height*headstart.circle_zoom*resize_factor);
+    var region = papers.createPaperPath(0, 0, d.width*main_canvas.circle_zoom*resize_factor, d.height*main_canvas.circle_zoom*resize_factor);
 
-    var dogear = papers.createDogearPath(d.width*(1-headstart.dogear_width)*headstart.circle_zoom*resize_factor, 0, d.width*headstart.circle_zoom*resize_factor, d.height*headstart.circle_zoom*resize_factor);
+    var dogear = papers.createDogearPath(d.width*(1-main_canvas.dogear_width)*main_canvas.circle_zoom*resize_factor, 0, d.width*main_canvas.circle_zoom*resize_factor, d.height*main_canvas.circle_zoom*resize_factor);
 
     d3.select(current_foreignObject)
-        .attr("width", d.width * headstart.circle_zoom * resize_factor + "px")
-        .attr("height", d.height * headstart.circle_zoom * resize_factor + "px")
-        .style("width", d.width * headstart.circle_zoom * resize_factor + "px")
-        .style("height", d.height * headstart.circle_zoom * resize_factor + "px")
+        .attr("width", d.width * main_canvas.circle_zoom * resize_factor + "px")
+        .attr("height", d.height * main_canvas.circle_zoom * resize_factor + "px")
+        .style("width", d.width * main_canvas.circle_zoom * resize_factor + "px")
+        .style("height", d.height * main_canvas.circle_zoom * resize_factor + "px")
 
     d3.select(current_path)
         //.style("fill-opacity", opacity)
@@ -478,17 +477,17 @@ papers.resizePaper = function(d, holder_div, resize_factor, color, opacity) {
     d3.select(current_dogear)
         .attr("d", dogear);
 
-    var height = (headstart.content_based)?(d.height * headstart.circle_zoom * resize_factor + "px"):
-            (d.height * headstart.circle_zoom * resize_factor - 20 + "px");
+    var height = (main_canvas.content_based)?(d.height * main_canvas.circle_zoom * resize_factor + "px"):
+            (d.height * main_canvas.circle_zoom * resize_factor - 20 + "px");
     
     holder_div.select("div.metadata")
         .attr("height", height)
-        .attr("width", d.width * headstart.circle_zoom * resize_factor * (1-headstart.dogear_width) + "px")
+        .attr("width", d.width * main_canvas.circle_zoom * resize_factor * (1-main_canvas.dogear_width) + "px")
         .style("height", height)
-        .style("width", d.width * headstart.circle_zoom * resize_factor * (1-headstart.dogear_width) + "px")
+        .style("width", d.width * main_canvas.circle_zoom * resize_factor * (1-main_canvas.dogear_width) + "px")
 
     holder_div.select("div.readers")
-        .style("width", d.width * headstart.circle_zoom * resize_factor + "px");
+        .style("width", d.width * main_canvas.circle_zoom * resize_factor + "px");
 
 }
 
@@ -499,11 +498,11 @@ papers.enlargePaper = function(d,i) {
     papers.mouseoverpaper();
 
 
-    if(d.resized || !headstart.is_zoomed) {
+    if(d.resized || !main_canvas.is_zoomed) {
         return;
     }
     
-    headstart.recordAction(d.id, "enlarge_paper", headstart.user_id, d.bookmarked + " " + d.recommended, null);
+    main_canvas.recordAction(d.id, "enlarge_paper", main_canvas.user_id, d.bookmarked + " " + d.recommended, null);
  
    var resize_factor = 1.2;
 
@@ -525,7 +524,7 @@ papers.enlargePaper = function(d,i) {
         .style("cursor", "pointer")
         .on("click", function (d) {
 
-            if(!headstart.is_zoomed) {
+            if(!main_canvas.is_zoomed) {
                 return bubbles.makePaperClickable(d);
             } else {
 
@@ -539,8 +538,8 @@ papers.enlargePaper = function(d,i) {
                 }
 
                 d.paper_selected = true;
-                headstart.current_enlarged_paper = d;
-                headstart.recordAction(d.id, "click_on_paper", headstart.user_id, d.bookmarked + " " + d.recommended, null);
+                main_canvas.current_enlarged_paper = d;
+                main_canvas.recordAction(d.id, "click_on_paper", main_canvas.user_id, d.bookmarked + " " + d.recommended, null);
                 d3.event.stopPropagation();
             }
         })
@@ -548,31 +547,31 @@ papers.enlargePaper = function(d,i) {
         papers.mouseoutpaper(d, holder_div);
     });
 
-    headstart.current_circle = headstart.chart.selectAll("circle")
+    main_canvas.current_circle = main_canvas.chart.selectAll("circle")
         .filter(function (x, i) {
-            if (headstart.use_area_uri)
+            if (main_canvas.use_area_uri)
                 return (x.area_uri == d.area_uri);
             else
                 return (x.title == d.area);
         });
 
-    headstart.current_circle
+    main_canvas.current_circle
         .on("click", function (d) {
 
             list.reset();
 
             d3.selectAll("#list_holder")
             .filter(function (x, i) {
-                return (headstart.use_area_uri)?(x.area_uri == d.area_uri):(x.area == d.title);
+                return (main_canvas.use_area_uri)?(x.area_uri == d.area_uri):(x.area == d.title);
             })
             .style("display", function (d) { return d.filtered_out?"none":"inline"});
 
-            if(headstart.current_enlarged_paper != null)
-                headstart.current_enlarged_paper.paper_selected = false;
+            if(main_canvas.current_enlarged_paper != null)
+                main_canvas.current_enlarged_paper.paper_selected = false;
 
-            headstart.current_enlarged_paper = null;
+            main_canvas.current_enlarged_paper = null;
 
-            headstart.recordAction(d.id, "click_paper_list_enlarge", headstart.user_id, d.bookmarked + " " + d.recommended , null);
+            main_canvas.recordAction(d.id, "click_paper_list_enlarge", main_canvas.user_id, d.bookmarked + " " + d.recommended , null);
 
             d3.event.stopPropagation();
         });
@@ -584,13 +583,13 @@ papers.populateOverlay = function(d) {
     paper_frame
     .style("display","block")
 
-    loadAndAppendImage(headstart.images_path + d.id + "/page_1.png", 1);
+    loadAndAppendImage(main_canvas.images_path + d.id + "/page_1.png", 1);
 
     var images_finished = false;
     var counter = 2;
 
     while(!images_finished) {
-        var image_src = headstart.images_path + d.id + "/page_" + counter + ".png";
+        var image_src = main_canvas.images_path + d.id + "/page_" + counter + ".png";
 
         if (!loadAndAppendImage(image_src, counter)) {
             images_finished = true;
@@ -605,12 +604,12 @@ papers.calcResizeFactor = function(metadata) {
     var new_height = current_paper.scrollHeight;
     var new_width = current_paper.offsetWidth;
 
-    var ratio_old = headstart.paper_width_factor/headstart.paper_height_factor;
+    var ratio_old = main_canvas.paper_width_factor/main_canvas.paper_height_factor;
     var ratio_new = new_height/new_width;
 
     while(ratio_new.toFixed(1) > ratio_old.toFixed(1)) {
-        new_height -= Math.pow(headstart.paper_height_factor,3);
-        new_width += Math.pow(headstart.paper_width_factor,3);
+        new_height -= Math.pow(main_canvas.paper_height_factor,3);
+        new_width += Math.pow(main_canvas.paper_width_factor,3);
         ratio_new = new_height/new_width;
     }
 
@@ -621,10 +620,10 @@ papers.calcResizeFactor = function(metadata) {
 papers.createDogearPath = function(x, y, width, height, correction_x, correction_y) {
 
     if (!correction_x)
-        correction_x = headstart.dogear_width;
+        correction_x = main_canvas.dogear_width;
 
     if (!correction_y)
-        correction_y = headstart.dogear_height;
+        correction_y = main_canvas.dogear_height;
 
     var v = height * correction_x;
     var h = width * correction_y;

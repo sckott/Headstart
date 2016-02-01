@@ -22,15 +22,15 @@ var popup = StateMachine.create({
 
             this.drawPreviewArea( paper_frame_inner );
             
-            if(headstart.show_infolink) {
+            if(main_canvas.show_infolink) {
                 this.drawInfoLinkWithTitle( "What's this?" );
             }
             
-            if(headstart.show_timeline) {
+            if(main_canvas.show_timeline) {
               this.drawTimeLineLink();
             }
             
-            if(headstart.show_dropdown) {
+            if(main_canvas.show_dropdown) {
               this.drawDropdown();
             }
             
@@ -39,7 +39,7 @@ var popup = StateMachine.create({
         },
         
         onstart: function ( event, from, to ) {
-            if(headstart.show_intro) {
+            if(main_canvas.show_intro) {
                 popup.show();
             }
         },
@@ -53,7 +53,7 @@ var popup = StateMachine.create({
                            .attr  ( "id", "intro" )
                            .html(intro_html);
          
-         headstart.recordAction("none", "show_popup", headstart.user_id, "none", null);
+         main_canvas.recordAction("none", "show_popup", main_canvas.user_id, "none", null);
         },
 
         onhide: function( event, from, to ) {
@@ -64,7 +64,7 @@ var popup = StateMachine.create({
               node.removeChild(node.lastChild);
           }
           
-          headstart.recordAction("none", "hide_popup", headstart.user_id, "none", null);
+          main_canvas.recordAction("none", "hide_popup", main_canvas.user_id, "none", null);
         }
     }
 });
@@ -76,7 +76,7 @@ popup.initClickListenersForNav = function() {
 
   $("#timelineview").on("click", function() {
     if ($("#timelineview a").html() == "TimeLineView") {
-      headstart.totimeline();
+      main_canvas.totimeline();
     }
   });
 }
@@ -84,10 +84,10 @@ popup.initClickListenersForNav = function() {
 // The paper frame is the main popup element.
 popup.drawPopUp = function() {
 
-  var width = $("#" + headstart.tag).width();
-  var height = $("#" + headstart.tag).height();
+  var width = $("#" + main_canvas.tag).width();
+  var height = $("#" + main_canvas.tag).height();
   
-  var position = $("#" + headstart.tag).position();
+  var position = $("#" + main_canvas.tag).position();
 
     popup.paper_frame
          .style( "position", "absolute" )
@@ -104,7 +104,7 @@ popup.drawPopUp = function() {
     .style( "width",  popup.width  + "px" )
     .style( "height", popup.height + "px" )
     .style( "margin-top", function (d) {
-      return headstart.max_chart_size/2 - popup.height/2 + "px";
+      return main_canvas.max_chart_size/2 - popup.height/2 + "px";
     });
 }
 
@@ -114,9 +114,9 @@ popup.drawHideButton = function() {
     var button = paper_frame_inner.append( "div" )
                  .attr  ( "id", "paper_frame_bar" )
                  .style ( "width",  popup.width + "px" )
-                 .style ( "height", headstart.preview_top_height + "px" )
+                 .style ( "height", main_canvas.preview_top_height + "px" )
                  .append( "img" )
-                 .attr  ( "src", headstart.images_path + "close.png" )
+                 .attr  ( "src", main_canvas.images_path + "close.png" )
                  .attr  ( "id", "close-button" )
 
     return button;
@@ -130,8 +130,8 @@ popup.drawPreviewArea = function( paper_frame_inner ) {
     paper_frame_inner.append("div")
         .attr ( "id", "preview" )
         .attr ( "width",  popup.width + "px" )
-        .attr ( "height", headstart.preview_page_height + "px" )
-        .style( "height", headstart.preview_page_height + "px" );
+        .attr ( "height", main_canvas.preview_page_height + "px" )
+        .style( "height", main_canvas.preview_page_height + "px" );
 
     paper_frame_inner.append("div").attr( "id","shadow-bottom" );
 }
@@ -149,19 +149,19 @@ popup.drawDropdown = function() {
   $("#info").append(" Select dataset: ");
   $("#info").append(dropdown);
 
-  $.each(headstart.bubbles, function (index, entry) {
+  $.each(main_canvas.bubbles, function (index, entry) {
     var current_item = '<option value="' + entry.file +'">' + entry.title + '</option>';
     $("#datasets").append(current_item);
   })
   
-  //$("#datasets " + headstart.current_file_number + ":selected").text();
-  $("#datasets").val(headstart.bubbles[headstart.current_file_number].file);
+  //$("#datasets " + main_canvas.current_file_number + ":selected").text();
+  $("#datasets").val(main_canvas.bubbles[main_canvas.current_file_number].file);
   
   $("#datasets").change(function() {
 
     var selected_file_number = datasets.selectedIndex + 1;  
-    if(selected_file_number != headstart.current_file_number) {
-      headstart.tofile(selected_file_number);
+    if(selected_file_number != main_canvas.current_file_number) {
+      main_canvas.tofile(selected_file_number);
     }
   })
 }
@@ -186,7 +186,7 @@ popup.drawInfoLinkWithTitle = function( title ) {
                   '">' + title + '</a>)</span></h2>';
 
   var info = d3.select( "#subdiscipline_title h1" )
-               .html(headstart.subdiscipline_title + whatsthis);
+               .html(main_canvas.subdiscipline_title + whatsthis);
 }
 
 /*popup.loadAndAppendImage =  function( image_src, page_number ) {
@@ -195,7 +195,7 @@ popup.drawInfoLinkWithTitle = function( title ) {
         this.paper_frame.select("#preview")
            .append("div")
             .attr("id", "preview_page_index")
-            .style("width", headstart.preview_image_width + "px")
+            .style("width", main_canvas.preview_image_width + "px")
             .style("height", "20px")
             .html("Page " + page_number)
 
@@ -204,8 +204,8 @@ popup.drawInfoLinkWithTitle = function( title ) {
             .attr("id", "preview_page")
             .attr("class", "lazy")
             .attr("src", image_src)
-            .style("height", headstart.preview_image_height + "px")
-            .style("width", headstart.preview_image_width + "px")
+            .style("height", main_canvas.preview_image_height + "px")
+            .style("width", main_canvas.preview_image_width + "px")
 
     } else {
         return false;

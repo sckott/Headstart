@@ -3,7 +3,7 @@
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <script type="text/javascript" src="vis/lib/jquery-1.8.1.min.js">
             </script>
-            <script type="text/javascript" src="vis/vis.js"></script>
+            <script type="text/javascript" src="vis/headstart.js"></script>
     </head>
 
     <body style="margin:0px; padding:0px">
@@ -13,7 +13,7 @@
                 var height = ($(document).height() < 700)?(700):($(document).height());
                 $("#visualization").css("height", height + "px");
                 
-                var myHeadstart = new Headstart(
+                var headstart = new Headstart(
                         "localhost/" //host
                         , "headstart2/" //path
                         , "visualization" //append to tag
