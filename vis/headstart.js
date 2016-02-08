@@ -2,68 +2,68 @@ var headstart = null;
 var namespace = "headstart";
 
 Headstart = function(host, path, tag, files, options) {
-    var mediator = new Mediator();
-    mediator.subscribe("click", zoom);
-    mediator.subscribe("mouseover", mouseover);
-    mediator.subscribe("mouseout", mouseout);
-
-    settings: {
-        loading = true;
-        zoomedin = false;
-        current_view = "none";
+    this.states = {
+        zoomedin: false,
+        loading: false,
+        hover_id: null,
+        click_id: null
     };
 
-    init(host, path, tag, files, options);
+    this.init(host, path, tag, files, options)
 
-    function init(host, path, tag, files, options) {
+    headstart = this;
+}
+
+Headstart.prototype = {
+    init: function(host, path, tag, files, options) {
         var vis_directory = "vis/";
         var lib_directory = "lib/";
-        var lib_sources = [{
-            source: "browser_detect.js"
-        }, {
-            source: "jquery-1.8.1.min.js"
-        }, {
-            source: "state-machine.js"
-        }, {
-            source: "d3.v3.js",
-            important: true
-        }];
+        // var lib_sources = [{
+        //     source: "browser_detect.js"
+        // }, {
+        //     source: "jquery-1.8.1.min.js"
+        // }, {
+        //     source: "state-machine.js"
+        // }, {
+        //     source: "d3.v3.js",
+        //     important: true
+        // }];
 
-        var divs = [
-            // "main",
-            // "subdiscipline_title",
-            "vis_row",
-            "headstart-chart",
-            "papers_list_container",
-            "paper_frame"
-        ];
+        // var divs = [
+        //     // "main",
+        //     // "subdiscipline_title",
+        //     "vis_row",
+        //     "headstart-chart",
+        //     "papers_list_container",
+        //     "paper_frame"
+        // ];
 
-        var script_sources = [{
-            source: "intro.js"
-        }, {
-            source: "popup.js"
-        }, {
-            source: "bubbles.js"
-        }, {
-            source: "papers.js"
-        }, {
-            source: "list.js"
-        }, {
-            source: "main_canvas.js",
-            final: true
-        }]
+        // var script_sources = [{
+        //     source: "intro.js"
+        // }, {
+        //     source: "popup.js"
+        // }, {
+        //     source: "bubbles.js"
+        // }, {
+        //     source: "papers.js"
+        // }, {
+        //     source: "list.js"
+        // }, {
+        //     source: "main_canvas.js",
+        //     final: true
+        // }]
 
         var source = $("#entry-template").html();
         var template = Handlebars.compile(source);
         $("#visualization").append(template());
 
-        addScript = function(source, tag, async) {
-            var current_script = document.createElement('script');
-            current_script.type = 'text/javascript';
-            current_script.src = source;
-            current_script.async = async;
-            return document.getElementsByTagName(tag)[0].appendChild(current_script);
-        }
+        // addScript = function(source, tag, async) {
+        //     var current_script = document.createElement('script');
+        //     current_script.type = 'text/javascript';
+        //     current_script.src = source;
+        //     current_script.async = async;
+        //     return document.getElementsByTagName(tag)[0].appendChild(current_script);
+        // }
 
         addCss = function(source, tag) {
             var current_css = document.createElement('link');
@@ -77,41 +77,44 @@ Headstart = function(host, path, tag, files, options) {
 
         addCss('http://' + host + path + vis_directory + 'style.css', 'head');
 
-        lib_sources.forEach(function(script_source, i) {
-            var current_script = addScript('http://' + host + path + vis_directory + lib_directory + script_source.source, 'head', false);
+        // lib_sources.forEach(function(script_source, i) {
+        //     var current_script = addScript('http://' + host + path + vis_directory + lib_directory + script_source.source, 'head', false);
 
-            if (typeof script_source.important !== 'undefined') {
-                current_script.onload = function() {
-                    script_sources.forEach(function(script_source) {
-                        var source = 'http://' + host + path + vis_directory + script_source.source;
-                        var this_script = addScript(source, 'head', false);
+        //     if (typeof script_source.important !== 'undefined') {
+        //         current_script.onload = function() {
+        //             script_sources.forEach(function(script_source) {
+        //                 var source = 'http://' + host + path + vis_directory + script_source.source;
+        //                 var this_script = addScript(source, 'head', false);
 
-                        if (typeof script_source.final !== 'undefined') {
-                            this_script.onload = function() {
-                                main_canvas = new HeadstartFSM(
-                                    host, path, tag, files, options
-                                );
+        //                 if (typeof script_source.final !== 'undefined') {
+        //                     this_script.onload = function() {
+        //                         main_canvas = new HeadstartFSM(
+        //                             host, path, tag, files, options
+        //                         );
+        //                         main_canvas.start()
+        //                     }
+        //                 }
+        //             })
+        //         }
+        //     }
+        // })
+        this.mediator = new Mediator();
+        this.mediator.subscribe("click", this.zoom);
+        this.mediator.subscribe("mouseover", this.mouseover);
+        this.mediator.subscribe("mouseout", this.mouseout);
+        this.mediator.subscribe("enlargePaper", this.paperClick);
 
-                                main_canvas.start();
-                            }
-                        }
-                    })
-                }
-            }
-        })
-        
-        headstart = this;
-    }
+    },
 
-    function zoom(bubbles, b_fsm) {
+    zoom: function(bubbles, b_fsm) {
         if (papers.is("loading"))
             return false;
 
-        if (main_canvas.is_zoomed)
+        if (headstart.states.zoomedin)
             return false;
 
         if (bubbles !== undefined) {
-            main_canvas.is_zoomed = true;
+            headstart.states.zoomedin = true;
             var previous_zoom_node = main_canvas.current_zoom_node;
             list.reset();
             if (typeof bubbles != 'undefined') {
@@ -172,14 +175,15 @@ Headstart = function(host, path, tag, files, options) {
             b_fsm.initMouseListeners();
             papers.zoom();
         }
-    }
+    },
 
-    function mouseover(b_fsm, bubbles, circle) {
-        if (zoomedin)
-            return false;
+    mouseover: function(b_fsm, bubbles, circle) {
         if (main_canvas.is("normal") || main_canvas.is("switchfiles")) {
             b_fsm.resetCircleDesign();
         }
+
+        if (headstart.states.zoomedin)
+            return false;
 
         main_canvas.current_circle = d3.select(circle);
         if (main_canvas.is("timeline")) {
@@ -199,22 +203,15 @@ Headstart = function(host, path, tag, files, options) {
             }
             d3.selectAll("#region").style("fill-opacity", 1);
         }
+    },
 
-    }
-
-    function mouseout(b_fsm, bubbles, circle) {
-        if (main_canvas.is_zoomed)
-            return false;
-
-        if (b_fsm.is("zoomedin") || b_fsm.is("hoverbig")) {
+    mouseout: function(b_fsm, bubbles, circle) {
+        // d3.event.stopPropagation();
+        if (headstart.states.zoomedin || b_fsm.is("hoverbig")) {
             return false;
         }
 
         if (papers.is("loading")) {
-            return false;
-        }
-
-        if (!$(event.target).hasClass(circle)) {
             return false;
         }
 
@@ -230,14 +227,20 @@ Headstart = function(host, path, tag, files, options) {
             }
         }
 
+        // if (!$(event.target).hasClass('circle')) {
+        //     alert(event.target.className);
+        //     return false;
+        // }
+
+        b_fsm.resetCircleDesign();
+        papers.mouseout();
 
         if (main_canvas.is("normal") || main_canvas.is("switchfiles")) {
             if (event == "notzoomedmouseout") {
                 b_fsm.resetCircleDesign();
-                if (!papers.is("loading")) {
-                    papers.mouseout();
-                }
+                papers.mouseout();
             }
+
             if (papers.is("infrontofbigbubble")) {
                 papers.mouseout();
             }
@@ -249,11 +252,13 @@ Headstart = function(host, path, tag, files, options) {
         } else {
             b_fsm.resetCircleDesign();
         }
-    }
-}
+    },  
 
-function initVar(variable, default_value) {
-    return typeof variable !== 'undefined' ? variable : default_value;
+    paperClick: function(){
+        if(headstart.states.zoomedin){
+            papers.enlargePaper();
+        }
+    }
 }
 
 // ------------------------------------------------------------
