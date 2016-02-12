@@ -66,17 +66,17 @@ Headstart.prototype = {
         //     return document.getElementsByTagName(tag)[0].appendChild(current_script);
         // }
 
-        addCss = function(source, tag) {
-            var current_css = document.createElement('link');
-            current_css.type = 'text/css';
-            current_css.rel = 'stylesheet';
-            current_css.href = source;
-            return document.getElementsByTagName(tag)[0].appendChild(current_css);
-        }
+        // addCss = function(source, tag) {
+        //     var current_css = document.createElement('link');
+        //     current_css.type = 'text/css';
+        //     current_css.rel = 'stylesheet';
+        //     current_css.href = source;
+        //     return document.getElementsByTagName(tag)[0].appendChild(current_css);
+        // }
 
         document.getElementById(tag).className = namespace;
 
-        addCss('http://' + host + path + vis_directory + 'style.css', 'head');
+        // addCss('http://' + host + path + vis_directory + 'style.css', 'head');
 
         // lib_sources.forEach(function(script_source, i) {
         //     var current_script = addScript('http://' + host + path + vis_directory + lib_directory + script_source.source, 'head', false);
@@ -105,8 +105,7 @@ Headstart.prototype = {
         this.mediator.subscribe("mouseover", this.mouseover);
         this.mediator.subscribe("mouseout", this.mouseout);
         this.mediator.subscribe("enlargePaper", this.paperClick);
-        this.mediator.subscribe("popup_click", this.popup_click)
-
+        this.mediator.subscribe("popup_click", this.popup_click);
     },
 
     popup_click: function(){
