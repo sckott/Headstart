@@ -17,7 +17,8 @@ var popup = StateMachine.create({
 
             var button = this.drawHideButton( paper_frame_inner );
             button.on("click", function (d) {
-              popup.hide();
+              // popup.hide();
+              headstart.mediator.publish("popup_click")
             });
 
             this.drawPreviewArea( paper_frame_inner );
@@ -71,7 +72,8 @@ var popup = StateMachine.create({
 
 popup.initClickListenersForNav = function() {
   $("#infolink").on("click", function () {
-    popup.show();
+    // popup.show();
+    headstart.mediator.publish("popup_click")
   });
 
   $("#timelineview").on("click", function() {
