@@ -185,7 +185,8 @@ list.initListMouseListeners = function() {
   }).on( "mouseout", function (d) {
     list.colorButton( this, '#EEE', '#000' );
   }).on( "click", function (d) {
-    list.toggle();
+    // list.toggle();
+    headstart.mediator.publish("list_toggle");
   });
 
   d3.selectAll( "#list_title" ).on( "click", function(d) {

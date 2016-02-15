@@ -27,12 +27,21 @@ Headstart.prototype = {
         document.getElementById(tag).className = namespace;
 
         this.mediator = new Mediator();
+
+        // bubbles
         this.mediator.subscribe("zoomin", this.zoomin);
         this.mediator.subscribe("zoomout", this.zoomout);
         this.mediator.subscribe("mouseover", this.mouseover);
         this.mediator.subscribe("mouseout", this.mouseout);
+
+        // papers
         this.mediator.subscribe("enlargePaper", this.paperClick);
+
+        // popup
         this.mediator.subscribe("popup_click", this.popup_click);
+
+        // list
+        this.mediator.subscribe("list_toggle", this.list_toggle);
     },
 
     popup_click: function(){
@@ -202,6 +211,10 @@ Headstart.prototype = {
         if (headstart.states.zoomedin) {
             papers.enlargePaper(d);
         }
+    },
+
+    list_toggle: function() {
+        list.toggle();
     }
 }
 
