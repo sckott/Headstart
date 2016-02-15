@@ -230,7 +230,7 @@ BubblesFSM.prototype = {
     initCircleClickListener: function() {
         var b_fsm = this;
         d3.selectAll("circle").on("click", function(bubbles) {
-            headstart.mediator.publish("click", bubbles, b_fsm)
+            headstart.mediator.publish("zoomin", bubbles, b_fsm)
         });
     },
 
@@ -515,11 +515,14 @@ BubblesFSM.prototype = {
 
         // make papers enlargable
         d3.selectAll("div.paper_holder")
-            .on("mouseover", papers.enlargePaper);
+            // .on("mouseover", papers.enlargePaper);
+            .on("mouseover", function(d) {
+                headstart.mediator.publish("enlargePaper", d);
+            })
 
         d3.selectAll("circle")
             .on("click", function(d) {
-                headstart.mediator.publish("click", bubble, b);
+                headstart.mediator.publish("zoomin", bubble, b);
             })
             .style("display", "block");
 
@@ -555,7 +558,7 @@ BubblesFSM.prototype = {
 
     zoomOut: function() {
 
-        if (!main_canvas.is_zoomed) {
+        if (!headstart.states.zoomedin) {
             return;
         }
 
@@ -563,7 +566,7 @@ BubblesFSM.prototype = {
             return;
         }
 
-        main_canvas.is_zoomed = false;
+        headstart.states.zoomedin = false;
 
         list.reset();
 

@@ -373,7 +373,6 @@ HeadstartFSM.prototype = {
     },
 
     drawChartCanvas: function() {
-
         var chart = this.svg.append("g").attr("id", "chart_canvas");
         chart.attr("height", this.max_chart_size + "px")
         chart.attr("width", this.max_chart_size + "px");
@@ -394,7 +393,7 @@ HeadstartFSM.prototype = {
 
     initMouseMoveListeners: function() {
         $("rect").on("mouseover", function() {
-            if (!main_canvas.is_zoomed) {
+            if (!headstart.states.zoomedin) {
                 // main_canvas.bubbles[main_canvas.current_file_number].onmouseout("notzoomedmouseout");
                 main_canvas.current_circle = null;
             }
@@ -404,11 +403,13 @@ HeadstartFSM.prototype = {
 
     initMouseClickListeners: function() {
         $("rect").on("click", function() {
-            main_canvas.bubbles[main_canvas.current_file_number].zoomout();
+            headstart.mediator.publish("zoomout");
+            // main_canvas.bubbles[main_canvas.current_file_number].zoomout();
         });
 
         $("#headstart-chart").on("click", function() {
-            main_canvas.bubbles[main_canvas.current_file_number].zoomOut();
+            headstart.mediator.publish("zoomout");
+            // main_canvas.bubbles[main_canvas.current_file_number].zoomOut();
         });
     },
 

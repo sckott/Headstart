@@ -284,7 +284,7 @@ filterList = function(event) {
   
     var data_circle = filtered_data
     .filter(function (d) {
-      if (main_canvas.is_zoomed === true) {
+      if (headstart.states.zoomedin === true) {
         if (main_canvas.use_area_uri)
           return current_circle.data()[0].area_uri == d.area_uri;
         else
